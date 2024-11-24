@@ -8,7 +8,10 @@ def read_data(file_path):
     json_data = json.load(f)
     
   detections = json_data["detections"]
-  return pd.json_normalize(detections)
+  df = pd.json_normalize(detections)
+  df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received','altitude'], axis=1)
+  df.columns = ['precyzja', 'obraz', 'wysokość', 'szerokość', 'x', 'y', 'szerokość_geo', 'długość', 'czas', 'id_telefonu', 'id_użytkownika', 'id_zespołu']
+  return df
 
 def particle_flux(data):
     time = 0
