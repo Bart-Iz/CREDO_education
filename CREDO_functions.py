@@ -9,7 +9,7 @@ def read_data(file_path):
     
   detections = json_data["detections"]
   df = pd.json_normalize(detections)
-  df['timestamp'] = pd.to_datetime(dataFrame['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw')
+  df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw')
   df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content'], axis=1)
   df.columns = ['precyzja', 'wysokość', 'szerokość', 'x', 'y', 'szerokość_geo', 'długość', 'czas', 'id_telefonu', 'id_użytkownika', 'id_zespołu']
   return df
