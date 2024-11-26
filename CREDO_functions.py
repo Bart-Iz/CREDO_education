@@ -42,15 +42,15 @@ def filter_by_date(df, start_date, end_date=None):
 def weekdays(df, weekdays):
     df = df[df['czas'].dt.day_name(locale='pl_PL').isin(weekdays)]
     df['dzień'] = df['czas'].dt.day_name(locale='pl_PL')  
-    return filtered_df
+    return df
 
 def month(df, months):
     df = df[df['czas'].dt.month_name(locale='pl_PL').isin(weekdays)]
     df['miesiąc'] = df['czas'].dt.month_name(locale='pl_PL')  
-    return filtered_df
+    return df
 
 def year(df, years):
     filtered_df = df[df['czas'].dt.year.isin(years)]
     df['rok'] = df['czas'].dt.year  
-    return filtered_df
+    return df
 
