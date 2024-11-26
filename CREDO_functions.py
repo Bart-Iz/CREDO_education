@@ -29,3 +29,28 @@ def particle_flux(data):
         n += len(time_diffs)+1
         time += time_diffs.sum()
     return n/(surface*time)
+
+def filter_by_date(df, start_date, end_date=None):
+    if end_date:
+        filtered_df = df[(df['czas'].dt.date >= pd.Timestamp(start_date).date()) &
+                         (df['czas'].dt.date <= pd.Timestamp(end_date).date())]
+    else:
+        filtered_df = df[df['czas'].dt.date == pd.Timestamp(start_date).date()]
+    
+    return filtered_df
+
+def weekdays(df, weekdays):
+    df = df[df['czas'].dt.day_name(locale='pl_PL').isin(weekdays)]
+    df['dzień'] = df['czas'].dt.day_name(locale='pl_PL')  
+    return filtered_df
+
+def month(df, months):
+    df = df[df['czas'].dt.month_name(locale='pl_PL').isin(weekdays)]
+    df['miesiąc'] = df['czas'].dt.month_name(locale='pl_PL')  
+    return filtered_df
+
+def year(df, years):
+    filtered_df = df[df['czas'].dt.year.isin(years)]
+    df['rok'] = df['czas'].dt.year  
+    return filtered_df
+
