@@ -76,7 +76,7 @@ def years(df, year):
     df['rok'] = df['czas'].dt.year  
     return df
 
-  def show_on_map(df)
+  def show_on_map(df):
     points = df.groupby(['latitude', 'longitude']).size().reset_index(name='counts')
     points['sizes'] = points['counts']/points['counts'].max() + 0.05
     points= points.drop(index=1)
