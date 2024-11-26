@@ -50,7 +50,7 @@ def month(df, months):
     return df
 
 def year(df, years):
-    filtered_df = df[df['czas'].dt.year.isin(years)]
+    df = df[df['czas'].dt.year.isin(years)]
     df['rok'] = df['czas'].dt.year  
     return df
 
