@@ -39,18 +39,48 @@ def filter_by_date(df, start_date, end_date=None):
     
     return filtered_df
 
-def weekdays(df, weekdays):
-    df = df[df['czas'].dt.day_name().isin(weekdays)]
-    #df['dzień'] = df['czas'].dt.day_name()  
+def weekdays(df, weekday):
+    polish_days = {
+      0: 'Poniedziałek',
+      1: 'Wtorek',
+      2: 'Środa',
+      3: 'Czwartek',
+      4: 'Piątek',
+      5: 'Sobota',
+      6: 'Niedziela'}
+    df = df[df['czas'].dt.day.isin(weekday)].copy()
+    df['dzień'] = df['czas'].dt.weekday.map(polish_days)  
     return df
 
-def month(df, months):
-    df = df[df['czas'].dt.month_name(locale='pl_PL').isin(weekdays)]
-    #df['miesiąc'] = df['czas'].dt.month_name(locale='pl_PL')  
+def months(df, month):
+    polish_months = {
+      1: 'Styczeń',
+      2: 'Luty',
+      3: 'Marzec',
+      4: 'Kwiecień',
+      5: 'Maj',
+      6: 'Czerwiec',
+      7: 'Lipiec',
+      8: 'Sierpień',
+      9: 'Wrzesień',
+      10: 'Październik',
+      11: 'Listopad',
+      12: 'Grudzień'
+   }
+    df = df[df['czas'].dt.month.isin(month)].copy()
+    df['miesiąc'] = df['czas'].dt.month.map(polish_months)  
     return df
 
-def year(df, years):
-    df = df[df['czas'].dt.year.isin(years)]
-    #df['rok'] = df['czas'].dt.year  
+def years(df, year):
+    df = df[df['czas'].dt.year.isin(year)].copy()
+    df['rok'] = df['czas'].dt.year  
     return df
+
+  def show_on_map(df)
+    points = df.groupby(['latitude', 'longitude']).size().reset_index(name='counts')
+    points['sizes'] = points['counts']/points['counts'].max() + 0.05
+    points= points.drop(index=1)
+    fig = px.scatter_mapbox(points, lon=points['longitude'], lat=points["latitude"], color=points["counts"], size=points["sizes"], zoom=3, )
+    fig.update_layout(mapbox_style='open-street-map')
+    fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
 
