@@ -2,11 +2,6 @@ import pandas as pd
 import json
 import plotly.express as px
 import matplotlib.pyplot as plt
-import locale
-
-!sudo locale-gen pl_PL.UTF-8
-!sudo update-locale LANG=pl_PL.UTF-8
-locale.setlocale(locale.LC_TIME, 'pl_PL.UTF-8')
 
 def read_data(file_path):
   with open(file_path) as f:
@@ -46,16 +41,16 @@ def filter_by_date(df, start_date, end_date=None):
 
 def weekdays(df, weekdays):
     df = df[df['czas'].dt.day_name().isin(weekdays)]
-    df['dzień'] = df['czas'].dt.day_name()  
+    #df['dzień'] = df['czas'].dt.day_name()  
     return df
 
 def month(df, months):
-    df = df[df['czas'].dt.month_name().isin(weekdays)]
-    df['miesiąc'] = df['czas'].dt.month_name()  
+    df = df[df['czas'].dt.month_name(locale='pl_PL').isin(weekdays)]
+    #df['miesiąc'] = df['czas'].dt.month_name(locale='pl_PL')  
     return df
 
 def year(df, years):
     df = df[df['czas'].dt.year.isin(years)]
-    df['rok'] = df['czas'].dt.year  
+    #df['rok'] = df['czas'].dt.year  
     return df
 
