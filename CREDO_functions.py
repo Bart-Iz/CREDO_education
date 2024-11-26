@@ -76,11 +76,12 @@ def years(df, year):
     df['rok'] = df['czas'].dt.year  
     return df
 
-  def show_on_map(df):
-    points = df.groupby(['latitude', 'longitude']).size().reset_index(name='counts')
+def show_on_map(df):
+    points = df.groupby(['szerokość_geo', 'długość']).size().reset_index(name='counts')
     points['sizes'] = points['counts']/points['counts'].max() + 0.05
     points= points.drop(index=1)
-    fig = px.scatter_mapbox(points, lon=points['longitude'], lat=points["latitude"], color=points["counts"], size=points["sizes"], zoom=3, )
+    fig = px.scatter_mapbox(points, lon=points['długość'], lat=points["szerokość_geo"], color=points["counts"], size=points["sizes"], zoom=3, )
     fig.update_layout(mapbox_style='open-street-map')
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+    fig.show()
 
