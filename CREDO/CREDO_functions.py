@@ -12,7 +12,26 @@ def read_data(file_path):
   df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw')
   df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y'], axis=1)
   df.columns = ['precyzja', 'wysokość', 'szerokość', 'szerokość_geo', 'długość', 'czas', 'id_telefonu', 'id_użytkownika', 'id_zespołu']
+  df = map_id(df)
   return df
+
+def map_id(df):
+  with open('/user_mapping.json') as json_file:
+    users_data = json.load(json_file)
+
+  users = users_data['users'] 
+  users_map = {user['id']: user['username'] for user in users}
+  df['id_użytkownika'] = df['id_użytkownika'].map(users_map)
+  
+  with open('/team_mapping.json') as json_file:
+    teams_data = json.load(json_file)
+  
+  teams = teams_data['teams'] 
+  teams_map = {team['id']: team['name'] for team in teams}
+  df['id_zespołu'] = df['id_zespołu'].map(users_map)
+  return df
+
+
 
 def particle_flux(data):
     time = 0
