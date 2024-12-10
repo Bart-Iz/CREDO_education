@@ -16,14 +16,14 @@ def read_data(file_path):
   return df
 
 def map_id(df):
-  with open('user_mapping.json') as json_file:
+  with open('/content/CREDO/user_mapping.json') as json_file:
     users_data = json.load(json_file)
 
   users = users_data['users'] 
   users_map = {user['id']: user['username'] for user in users}
   df['id_użytkownika'] = df['id_użytkownika'].map(users_map)
   
-  with open('team_mapping.json') as json_file:
+  with open('/content/CREDO/team_mapping.json') as json_file:
     teams_data = json.load(json_file)
   
   teams = teams_data['teams'] 
