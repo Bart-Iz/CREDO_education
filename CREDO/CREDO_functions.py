@@ -11,7 +11,7 @@ def read_data(file_path):
   df = pd.json_normalize(detections)
   df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw')
   df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y'], axis=1)
-  df.columns = ['precyzja', 'wysokość', 'szerokość', 'szerokość_geo', 'długość', 'czas', 'id_telefonu', 'id_użytkownika', 'id_zespołu']
+  df.columns = ['precyzja', 'wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_telefonu', 'id_użytkownika', 'id_zespołu']
   df = map_id(df)
   return df
 
@@ -104,7 +104,7 @@ def teams(df, team_names):
     return df
 
 def show_on_map(df):
-    points = df.groupby(['szerokość_geo', 'długość']).size().reset_index(name='counts')
+    points = df.groupby(['szerokość_geo', 'długość_geo']).size().reset_index(name='counts')
     points['sizes'] = points['counts']/points['counts'].max() + 0.05
     points= points.drop(index=1)
     fig = px.scatter_mapbox(points, lon=points['długość'], lat=points["szerokość_geo"], color=points["counts"], size=points["sizes"], zoom=3, )
