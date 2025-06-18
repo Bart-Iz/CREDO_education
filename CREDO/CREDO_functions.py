@@ -28,33 +28,33 @@ polish_months = {
 }
 
 def read_data(file_path):
-with open(file_path) as f:
-  json_data = json.load(f)
-  
-detections = json_data["detections"]
-df = pd.json_normalize(detections)
-df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw')
-df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y', 'accuracy'], axis=1)
-df.columns = [ 'wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_urządzenia', 'id_użytkownika', 'id_zespołu']
-df = map_id(df)
-df = df[df['szerokość_geo']!=0.0]
-return df
+  with open(file_path) as f:
+    json_data = json.load(f)
+    
+  detections = json_data["detections"]
+  df = pd.json_normalize(detections)
+  df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw')
+  df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y', 'accuracy'], axis=1)
+  df.columns = [ 'wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_urządzenia', 'id_użytkownika', 'id_zespołu']
+  df = map_id(df)
+  df = df[df['szerokość_geo']!=0.0]
+  return df
 
 def map_id(df):
-with open('/content/CREDO/user_mapping.json') as json_file:
-  users_data = json.load(json_file)
+  with open('/content/CREDO/user_mapping.json') as json_file:
+    users_data = json.load(json_file)
+  
+  users = users_data['users'] 
+  users_map = {user['id']: user['username'] for user in users}
+  df['id_użytkownika'] = df['id_użytkownika'].map(users_map)
+  
+  with open('/content/CREDO/team_mapping.json') as json_file:
+    teams_data = json.load(json_file)
 
-users = users_data['users'] 
-users_map = {user['id']: user['username'] for user in users}
-df['id_użytkownika'] = df['id_użytkownika'].map(users_map)
-
-with open('/content/CREDO/team_mapping.json') as json_file:
-  teams_data = json.load(json_file)
-
-teams = teams_data['teams'] 
-teams_map = {team['id']: team['name'] for team in teams}
-df['id_zespołu'] = df['id_zespołu'].map(users_map)
-return df
+  teams = teams_data['teams'] 
+  teams_map = {team['id']: team['name'] for team in teams}
+  df['id_zespołu'] = df['id_zespołu'].map(users_map)
+  return df
 
 
 def plot_histogram(data, bins, xticks, xtick_labels, xlabel, title):
