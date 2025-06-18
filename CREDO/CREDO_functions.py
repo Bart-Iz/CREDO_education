@@ -72,59 +72,59 @@ def create_histogram(df):
   reverse_months = {v: k for k, v in polish_months.items()}
 
   while True:
-      data = df.copy()
-      print("Jaki rodzaj histogramu chcesz wykonać? (dni tygodnia, miesiące, lata)")
-      odp = input("Wybierz jedną z powyższych opcji. Zapisz ją dokładnie tak jak powyżej.\n")
+    data = df.copy()
+    print("Jaki rodzaj histogramu chcesz wykonać? (dni tygodnia, miesiące, lata)")
+    odp = input("Wybierz jedną z powyższych opcji. Zapisz ją dokładnie tak jak powyżej.\n")
 
-      if odp == "dni tygodnia":
-          data['dzień'] = data['dzień'].map(reverse_days)
-          plot_histogram(
-              data=data['dzień'],
-              bins=range(8),
-              xticks=range(7),
-              xtick_labels=[polish_days[i] for i in range(7)],
-              xlabel="Dzień tygodnia",
-              title="Histogram dni tygodnia"
-          )
+    if odp == "dni tygodnia":
+      data['dzień'] = data['dzień'].map(reverse_days)
+      plot_histogram(
+          data=data['dzień'],
+          bins=range(8),
+          xticks=range(7),
+          xtick_labels=[polish_days[i] for i in range(7)],
+          xlabel="Dzień tygodnia",
+          title="Histogram dni tygodnia"
+      )
 
-      elif odp == "miesiące":
-          data['miesiąc'] = data['miesiąc'].map(reverse_months)
-          plot_histogram(
-              data=data['miesiąc'],
-              bins=range(1, 14),
-              xticks=range(1, 13),
-              xtick_labels=[polish_months[i] for i in range(1, 13)],
-              xlabel="Miesiąc",
-              title="Histogram miesięcy"
-          )
+    elif odp == "miesiące":
+      data['miesiąc'] = data['miesiąc'].map(reverse_months)
+      plot_histogram(
+            data=data['miesiąc'],
+            bins=range(1, 14),
+            xticks=range(1, 13),
+            xtick_labels=[polish_months[i] for i in range(1, 13)],
+            xlabel="Miesiąc",
+            title="Histogram miesięcy"
+        )
 
-      elif odp == "lata":
-          min_year = data["rok"].min()
-          max_year = data["rok"].max()
-          years = list(range(min_year, max_year + 1))
-          plot_histogram(
-              data=data['rok'],
-              bins=range(min_year, max_year + 2),
-              xticks=years,
-              xtick_labels=years,
-              xlabel="Lata",
-              title="Histogram dla lat"
-          )
+    elif odp == "lata":
+      min_year = data["rok"].min()
+      max_year = data["rok"].max()
+      years = list(range(min_year, max_year + 1))
+      plot_histogram(
+          data=data['rok'],
+          bins=range(min_year, max_year + 2),
+          xticks=years,
+          xtick_labels=years,
+          xlabel="Lata",
+          title="Histogram dla lat"
+      )
 
-      else:
-          print("Nieznana opcja. Spróbuj ponownie.\n")
-          continue
+    else:
+      print("Nieznana opcja. Spróbuj ponownie.\n")
+      continue
 
-      repeat = input("Czy chcesz wykonać kolejny histogram? (tak/nie)\n").strip().lower()
-      if repeat != "tak":
-          break
+    repeat = input("Czy chcesz wykonać kolejny histogram? (tak/nie)\n").strip().lower()
+    if repeat != "tak":
+      break
 
 def filter_by_date(df, start_date, end_date=None):
   if end_date:
-      filtered_df = df[(df['czas'].dt.date >= pd.Timestamp(start_date).date()) &
+    filtered_df = df[(df['czas'].dt.date >= pd.Timestamp(start_date).date()) &
                        (df['czas'].dt.date <= pd.Timestamp(end_date).date())]
   else:
-      filtered_df = df[df['czas'].dt.date == pd.Timestamp(start_date).date()]
+    filtered_df = df[df['czas'].dt.date == pd.Timestamp(start_date).date()]
   
   return filtered_df
 
