@@ -117,7 +117,7 @@ def create_histogram(df):
     repeat = input("Czy chcesz wykonać kolejny histogram? (tak/nie)\n").strip().lower()
     if repeat != "tak":
       break
- print("Zakończenie rysowania.")
+  print("Zakończenie rysowania.")
 
 def filter_by_date(df, start_date, end_date=None):
   if end_date:
