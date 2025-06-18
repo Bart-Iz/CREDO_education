@@ -13,6 +13,7 @@ def read_data(file_path):
   df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y', 'accuracy'], axis=1)
   df.columns = [ 'wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_urządzenia', 'id_użytkownika', 'id_zespołu']
   df = map_id(df)
+  df = df[df['szerokość_geo']!=0.0]
   return df
 
 def map_id(df):
@@ -96,8 +97,7 @@ def years(df, year):
     return df
 
 def users(df, user_names):
-    df = df[df['id_użytkownika'].isin(user_names)]  
-    return df
+    return df[df['id_użytkownika'].isin(user_names)]
 
 def teams(df, team_names):
     df = df[df['id_zespołu'].isin(team_names)]  
@@ -106,8 +106,8 @@ def teams(df, team_names):
 def show_on_map(df):
     points = df.groupby(['szerokość_geo', 'długość_geo']).size().reset_index(name='counts')
     points['sizes'] = points['counts']/points['counts'].max() + 0.05
-    points= points.drop(index=1)
-    fig = px.scatter_mapbox(points, lon=points['długość'], lat=points["szerokość_geo"], color=points["counts"], size=points["sizes"], zoom=3, )
+    #points= points.drop(index=1)
+    fig = px.scatter_mapbox(points, lon=points['długość_geo'], lat=points["szerokość_geo"], color=points["counts"], size=points["sizes"], zoom=3, )
     fig.update_layout(mapbox_style='open-street-map')
     fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
     fig.show()
