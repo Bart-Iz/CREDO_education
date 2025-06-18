@@ -65,7 +65,6 @@ def plot_histogram(data, bins, xticks, xtick_labels, xlabel, title):
   plt.title(title)
   plt.tight_layout()
   plt.show()
-  plt.close()
 
 def create_histogram(df):
   reverse_days = {v: k for k, v in polish_days.items()}
@@ -118,6 +117,7 @@ def create_histogram(df):
     repeat = input("Czy chcesz wykonać kolejny histogram? (tak/nie)\n").strip().lower()
     if repeat != "tak":
       break
+ print("Zakończenie rysowania.")
 
 def filter_by_date(df, start_date, end_date=None):
   if end_date:
