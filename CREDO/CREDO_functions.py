@@ -76,6 +76,8 @@ def create_histogram(df):
     odp = input("Wybierz jedną z powyższych opcji. Zapisz ją dokładnie tak jak powyżej.\n")
 
     if odp == "dni tygodnia":
+      if not 'dzień' in data.columns:
+        data = weekdays(data, [])
       data['dzień'] = data['dzień'].map(reverse_days)
       plot_histogram(
           data=data['dzień'],
@@ -87,6 +89,8 @@ def create_histogram(df):
       )
 
     elif odp == "miesiące":
+      if not 'miesiąc' in data.columns:
+        data = months(data, [])
       data['miesiąc'] = data['miesiąc'].map(reverse_months)
       plot_histogram(
             data=data['miesiąc'],
@@ -98,6 +102,8 @@ def create_histogram(df):
         )
 
     elif odp == "lata":
+      if not 'rok' in data.columns:
+        data = years(data, [])
       min_year = data["rok"].min()
       max_year = data["rok"].max()
       years = list(range(min_year, max_year + 1))
