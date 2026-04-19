@@ -182,7 +182,7 @@ def show_on_map(df):
       size="sizes",
       zoom=3,
       color_continuous_scale="hot",
-      labels={"counts": "liczba"}
+      labels={"counts": "liczba<br>detekcji"}
   )
 
   fig.update_layout(
