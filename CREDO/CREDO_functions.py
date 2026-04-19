@@ -171,6 +171,7 @@ def teams(data, team_names):
   return df
 
 def show_on_map(df):
+  df = df[(df["szerokość_geo"] != 0) | (df["długość_geo"] != 0)]
   points = df.groupby(['szerokość_geo', 'długość_geo']).size().reset_index(name='counts')
   points['sizes'] = points['counts']/points['counts'].max() + 0.05
   fig = px.scatter_mapbox(
