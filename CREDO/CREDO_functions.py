@@ -171,11 +171,23 @@ def teams(data, team_names):
   return df
 
 def show_on_map(df):
-  points = df.groupby(['szerokość_geo', 'długość_geo']).size().reset_index(name='counts')
+  points = df.groupby(['latitude', 'longitude']).size().reset_index(name='counts')
   points['sizes'] = points['counts']/points['counts'].max() + 0.05
-  fig = px.scatter_mapbox(points, lon=points['długość_geo'], lat=points["szerokość_geo"], color=points["counts"], size=points["sizes"], zoom=3, )
-  fig.update_layout(mapbox_style='open-street-map')
-  fig.update_layout(margin={"r":0,"t":0,"l":0,"b":0})
+  fig = px.scatter_mapbox(
+      points,
+      lon="longitude",
+      lat="latitude",
+      color="counts",
+      size="sizes",
+      zoom=3,
+      color_continuous_scale="hot"
+  )
+
+  fig.update_layout(
+      mapbox_style="carto-positron",  # ← KLUCZOWA ZMIANA
+      margin={"r":0,"t":0,"l":0,"b":0}
+  )
+
   fig.show()
 
 def get_names(df):
