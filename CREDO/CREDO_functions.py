@@ -180,7 +180,9 @@ def show_on_map(df):
       lat="szerokość_geo",
       color="counts",
       size="sizes",
-      zoom=3
+      zoom=3,
+      color_continuous_scale="hot",
+      labels={"counts": "liczba"}
   )
 
   fig.update_layout(
