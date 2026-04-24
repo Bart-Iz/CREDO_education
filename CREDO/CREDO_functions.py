@@ -195,7 +195,7 @@ def show_on_map(df):
   )
 
   fig.update_layout(
-      mapbox_style="carto-positron",  # ← KLUCZOWA ZMIANA
+      mapbox_style="carto-positron",
       margin={"r":0,"t":0,"l":0,"b":0}
   )
 
