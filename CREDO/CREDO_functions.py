@@ -3,6 +3,7 @@ import json
 import plotly.express as px
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import numpy as np
 
 polish_days = {
   0: 'Poniedziałek',
