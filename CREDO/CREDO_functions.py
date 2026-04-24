@@ -2,6 +2,7 @@ import pandas as pd
 import json
 import plotly.express as px
 import matplotlib.pyplot as plt
+from matplotlib import cm
 
 polish_days = {
   0: 'Poniedziałek',
@@ -171,18 +172,26 @@ def teams(data, team_names):
   return df
 
 def show_on_map(df):
-  df = df[(df["szerokość_geo"] != 0) | (df["długość_geo"] != 0)]
+  df = df[(df["szerokość_geo"] != 0) & (df["długość_geo"] != 0)]
   points = df.groupby(['szerokość_geo', 'długość_geo']).size().reset_index(name='counts')
-  points['sizes'] = points['counts']/points['counts'].max() + 0.05
+  points['sizes'] = np.sqrt(points['counts'] / points['counts'].max()) * 20
+  hot = cm.get_cmap('hot')
+  hot_truncated = hot(np.linspace(0, 0.8, 256))
+
+  colorscale = [
+    [i/(len(hot_truncated)-1), f'rgb({int(r*255)},{int(g*255)},{int(b*255)})']
+    for i, (r,g,b,_) in enumerate(hot_truncated)
+  ]
+  
   fig = px.scatter_mapbox(
-      points,
-      lon="długość_geo",
-      lat="szerokość_geo",
-      color="counts",
-      size="sizes",
-      zoom=3,
-      color_continuous_scale="hot",
-      labels={"counts": "liczba<br>detekcji"}
+    points,
+    lon="długość_geo",
+    lat="szerokość_geo",
+    color="counts",
+    size="sizes",
+    zoom=3,
+    color_continuous_scale=colorscale,
+    labels={"counts": "liczba<br>detekcji"}
   )
 
   fig.update_layout(
