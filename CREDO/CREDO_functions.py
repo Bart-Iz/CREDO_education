@@ -205,3 +205,48 @@ def show_on_map(df):
 def get_names(df):
   print("Nazwy użytkowników: ", df['id_użytkownika'].unique().tolist())
   print("Nazwy zespołów: ", df['id_zespołu'].unique().tolist())
+
+def find_user(df, name):
+  if name in df['id_użytkownika'].unique():
+    print(f"Użytkownik '{name}' znajduje się w zbiorze danych.")
+  elif name in df['id_zespołu'].unique():
+    print(f"Zespół '{name}' znajduje się w zbiorze danych.")
+  else:
+    print(f"Nie znaleziono użytkownika ani zespołu o nazwie '{name}' w zbiorze danych.")
+
+def time_set(df):
+  data = df.copy()
+
+  data['numer_dnia'] = data['czas'].dt.weekday
+  data['dzień'] = data['numer_dnia'].map(polish_days)
+
+  data['numer_miesiąca'] = data['czas'].dt.month
+  data['miesiąc'] = data['numer_miesiąca'].map(polish_months)
+
+  print("Zakres czasu w danych:")
+  print("Od:", data['czas'].min().date())
+  print("Do:", data['czas'].max().date())
+  print()
+
+  dni = data[['numer_dnia', 'dzień']].drop_duplicates().sort_values('numer_dnia')
+  miesiace = data[['numer_miesiąca', 'miesiąc']].drop_duplicates().sort_values('numer_miesiąca')
+
+  print("Dni tygodnia występujące w danych:")
+  print(dni.to_string(index=False))
+  print()
+
+  print("Miesiące występujące w danych:")
+  print(miesiace.to_string(index=False))
+
+def list_unique(df):
+  users_list = df['id_użytkownika'].dropna().unique().tolist()
+  teams_list = df['id_zespołu'].dropna().unique().tolist()
+
+  print("Lista użytkowników:")
+  print(users_list)
+  print()
+
+  print("Lista zespołów:")
+  print(teams_list)
+
+  return users_list, teams_list
