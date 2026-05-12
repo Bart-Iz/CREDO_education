@@ -244,5 +244,3 @@ def list_unique(df):
 
   print("Lista zespołów:")
   print(teams_list)
-
-  return users_list, teams_list
