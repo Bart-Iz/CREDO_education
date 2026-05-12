@@ -202,10 +202,6 @@ def show_on_map(df):
 
   fig.show()
 
-def get_names(df):
-  print("Nazwy użytkowników: ", df['id_użytkownika'].unique().tolist())
-  print("Nazwy zespołów: ", df['id_zespołu'].unique().tolist())
-
 def find_user(df, name):
   if name in df['id_użytkownika'].unique():
     print(f"Użytkownik '{name}' znajduje się w zbiorze danych.")
