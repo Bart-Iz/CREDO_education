@@ -41,7 +41,7 @@ def read_data(file_path):
   df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y', 'accuracy'], axis=1)
   df.columns = [ 'wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_urządzenia', 'id_użytkownika', 'id_zespołu']
   df = map_id(df)
-  df = df[df['szerokość_geo']!=0.0]
+  df = df[(df["szerokość_geo"] != 0) & (df["długość_geo"] != 0)]
   return df
 
 def map_id(df):
@@ -52,7 +52,7 @@ def map_id(df):
     
     users = users_data['users'] 
     users_map = {user['id']: user['username'] for user in users}
-    df['id_użytkownika'] = df['id_użytkownika'].map(users_map)
+    df['id_użytkownika'] = df['id_użytkownika'].map(users_map).fillna(df['id_użytkownika'])
   
   team = Path('/content/CREDO/team_mapping.json')
   if team.exists():
@@ -61,7 +61,7 @@ def map_id(df):
   
     teams = teams_data['teams'] 
     teams_map = {team['id']: team['name'] for team in teams}
-    df['id_zespołu'] = df['id_zespołu'].map(teams_map)
+    df['id_zespołu'] = df['id_zespołu'].map(teams_map).fillna(df['id_zespołu'])
   return df
 
 
@@ -179,7 +179,10 @@ def teams(data, team_names):
   return df
 
 def show_on_map(df):
-  df = df[(df["szerokość_geo"] != 0) & (df["długość_geo"] != 0)]
+  if df.empty:
+    print("Brak punktów do pokazania na mapie.")
+    return
+  
   points = df.groupby(['szerokość_geo', 'długość_geo']).size().reset_index(name='counts')
   points['sizes'] = np.sqrt(points['counts'] / points['counts'].max()) * 20
   hot = cm.get_cmap('hot')
