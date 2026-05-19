@@ -4,6 +4,8 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import numpy as np
+from pathlib import Path
+import os
 
 polish_days = {
   0: 'Poniedziałek',
@@ -43,19 +45,23 @@ def read_data(file_path):
   return df
 
 def map_id(df):
-  with open('/content/CREDO/user_mapping.json') as json_file:
-    users_data = json.load(json_file)
+  user = Path('/content/CREDO/user_mapping.json')
+  if user.exists():
+    with open(user) as json_file:
+      users_data = json.load(json_file)
+    
+    users = users_data['users'] 
+    users_map = {user['id']: user['username'] for user in users}
+    df['id_użytkownika'] = df['id_użytkownika'].map(users_map)
   
-  users = users_data['users'] 
-  users_map = {user['id']: user['username'] for user in users}
-  df['id_użytkownika'] = df['id_użytkownika'].map(users_map)
+  team = Path('/content/CREDO/team_mapping.json')
+  if team.exists():
+    with open(team) as json_file:
+      teams_data = json.load(json_file)
   
-  with open('/content/CREDO/team_mapping.json') as json_file:
-    teams_data = json.load(json_file)
-
-  teams = teams_data['teams'] 
-  teams_map = {team['id']: team['name'] for team in teams}
-  df['id_zespołu'] = df['id_zespołu'].map(users_map)
+    teams = teams_data['teams'] 
+    teams_map = {team['id']: team['name'] for team in teams}
+    df['id_zespołu'] = df['id_zespołu'].map(teams_map)
   return df
 
 
