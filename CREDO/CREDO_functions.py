@@ -31,18 +31,38 @@ polish_months = {
   12: 'Grudzień'
 }
 
-def read_data(file_path):
-  with open(file_path) as f:
-    json_data = json.load(f)
+def read_data(file_path, multiple=True):
+  file_path = Path(file_path)
+
+  def read_single_json(path):
+    with open(path) as f:
+      json_data = json.load(f)
+      
+      detections = json_data["detections"]
+      df = pd.json_normalize(detections)
+      
+      df['timestamp'] = (pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw'))
+      
+      df = df.drop(['id', 'provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y', 'accuracy'], axis=1, errors='ignore')
+      df.columns = ['wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_urządzenia', 'id_użytkownika', 'id_zespołu']
+        
+      df = map_id(df)
+      df = df[(df["szerokość_geo"] != 0) & (df["długość_geo"] != 0)]
+      
+      return df
+
+  if multiple:
+    json_files = list(file_path.glob("*.json"))
     
-  detections = json_data["detections"]
-  df = pd.json_normalize(detections)
-  df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw')
-  df = df.drop(['id','provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y', 'accuracy'], axis=1)
-  df.columns = [ 'wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_urządzenia', 'id_użytkownika', 'id_zespołu']
-  df = map_id(df)
-  df = df[(df["szerokość_geo"] != 0) & (df["długość_geo"] != 0)]
-  return df
+    dfs = [read_single_json(path) for path in json_files]
+    
+    if len(dfs) == 0:
+      return pd.DataFrame()
+      
+    return pd.concat(dfs, ignore_index=True)
+  
+  else:
+    return read_single_json(file_path)
 
 def map_id(df):
   user = Path('/content/CREDO/user_mapping.json')
