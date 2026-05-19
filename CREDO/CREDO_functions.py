@@ -6,6 +6,11 @@ from matplotlib import cm
 import numpy as np
 from pathlib import Path
 import os
+from tqdm.notebook import tqdm
+
+import warnings
+
+warnings.filterwarnings("ignore")
 
 polish_days = {
   0: 'Poniedziałek',
@@ -54,7 +59,7 @@ def read_data(file_path, multiple=True):
   if multiple:
     json_files = list(file_path.glob("*.json"))
     
-    dfs = [read_single_json(path) for path in json_files]
+    dfs = [read_single_json(path) for path in tqdm(json_files)]
     
     if len(dfs) == 0:
       return pd.DataFrame()
@@ -72,7 +77,9 @@ def map_id(df):
     
     users = users_data['users'] 
     users_map = {user['id']: user['username'] for user in users}
-    df['id_użytkownika'] = df['id_użytkownika'].map(users_map).fillna(df['id_użytkownika'])
+    with warnings.catch_warnings():
+      warnings.simplefilter("ignore", FutureWarning)
+      df['id_użytkownika'] = df['id_użytkownika'].map(users_map).fillna(df['id_użytkownika'])
   
   team = Path('/content/CREDO/team_mapping.json')
   if team.exists():
@@ -81,7 +88,9 @@ def map_id(df):
   
     teams = teams_data['teams'] 
     teams_map = {team['id']: team['name'] for team in teams}
-    df['id_zespołu'] = df['id_zespołu'].map(teams_map).fillna(df['id_zespołu'])
+    with warnings.catch_warnings():
+      warnings.simplefilter("ignore", FutureWarning)
+      df['id_zespołu'] = df['id_zespołu'].map(teams_map).fillna(df['id_zespołu'])
   return df
 
 
