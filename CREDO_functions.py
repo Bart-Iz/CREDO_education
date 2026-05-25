@@ -1,0 +1,281 @@
+import pandas as pd
+import json
+import plotly.express as px
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import numpy as np
+from pathlib import Path
+import os
+from tqdm.notebook import tqdm
+
+import warnings
+
+warnings.filterwarnings("ignore")
+
+polish_days = {
+  0: 'Poniedziałek',
+  1: 'Wtorek',
+  2: 'Środa',
+  3: 'Czwartek',
+  4: 'Piątek',
+  5: 'Sobota',
+  6: 'Niedziela'}
+
+polish_months = {
+  1: 'Styczeń',
+  2: 'Luty',
+  3: 'Marzec',
+  4: 'Kwiecień',
+  5: 'Maj',
+  6: 'Czerwiec',
+  7: 'Lipiec',
+  8: 'Sierpień',
+  9: 'Wrzesień',
+  10: 'Październik',
+  11: 'Listopad',
+  12: 'Grudzień'
+}
+
+def read_data(file_path, multiple=True):
+  file_path = Path(file_path)
+
+  def read_single_json(path):
+    with open(path) as f:
+      json_data = json.load(f)
+      
+      detections = json_data["detections"]
+      df = pd.json_normalize(detections)
+      
+      df['timestamp'] = (pd.to_datetime(df['timestamp'], unit='ms').dt.tz_localize('UTC').dt.tz_convert('Europe/Warsaw'))
+      
+      df = df.drop(['id', 'provider', 'metadata', 'source', 'visible', 'time_received', 'altitude', 'frame_content', 'x', 'y', 'accuracy'], axis=1, errors='ignore')
+      df.columns = ['wysokość', 'szerokość', 'szerokość_geo', 'długość_geo', 'czas', 'id_urządzenia', 'id_użytkownika', 'id_zespołu']
+        
+      df = map_id(df)
+      df = df[(df["szerokość_geo"] != 0) & (df["długość_geo"] != 0)]
+      
+      return df
+
+  if multiple:
+    json_files = list(file_path.glob("*.json"))
+    
+    dfs = [read_single_json(path) for path in tqdm(json_files)]
+    
+    if len(dfs) == 0:
+      return pd.DataFrame()
+      
+    return pd.concat(dfs, ignore_index=True)
+  
+  else:
+    return read_single_json(file_path)
+
+def map_id(df):
+  user = Path('/content/CREDO/user_mapping.json')
+  if user.exists():
+    with open(user) as json_file:
+      users_data = json.load(json_file)
+    
+    users = users_data['users'] 
+    users_map = {user['id']: user['username'] for user in users}
+    with warnings.catch_warnings():
+      warnings.simplefilter("ignore", FutureWarning)
+      df['id_użytkownika'] = df['id_użytkownika'].map(users_map).fillna(df['id_użytkownika'])
+  
+  team = Path('/content/CREDO/team_mapping.json')
+  if team.exists():
+    with open(team) as json_file:
+      teams_data = json.load(json_file)
+  
+    teams = teams_data['teams'] 
+    teams_map = {team['id']: team['name'] for team in teams}
+    with warnings.catch_warnings():
+      warnings.simplefilter("ignore", FutureWarning)
+      df['id_zespołu'] = df['id_zespołu'].map(teams_map).fillna(df['id_zespołu'])
+  return df
+
+
+def plot_histogram(data, bins, xticks, xtick_labels, xlabel, title):
+  plt.figure()
+  plt.hist(data, bins=bins, align='left', rwidth=0.8)
+  plt.xticks(ticks=xticks, labels=xtick_labels, rotation=45)
+  plt.xlabel(xlabel)
+  plt.ylabel("Liczba wystąpień")
+  plt.title(title)
+  plt.tight_layout()
+  plt.show()
+  plt.close()
+
+def create_histogram(df):
+  reverse_days = {v: k for k, v in polish_days.items()}
+  reverse_months = {v: k for k, v in polish_months.items()}
+
+  data = df.copy()
+  print("Jaki rodzaj histogramu chcesz wykonać? (dni tygodnia, miesiące, lata)")
+  odp = input("Wybierz jedną z powyższych opcji. Zapisz ją dokładnie tak jak powyżej.\n")
+
+  if odp == "dni tygodnia":
+    if not 'dzień' in data.columns:
+      data = weekdays(data, [])
+    data['dzień'] = data['dzień'].map(reverse_days)
+    plot_histogram(
+        data=data['dzień'],
+        bins=range(8),
+        xticks=range(7),
+        xtick_labels=[polish_days[i] for i in range(7)],
+        xlabel="Dzień tygodnia",
+        title="Histogram dni tygodnia"
+    )
+
+  elif odp == "miesiące":
+    if not 'miesiąc' in data.columns:
+      data = months(data, [])
+    data['miesiąc'] = data['miesiąc'].map(reverse_months)
+    plot_histogram(
+          data=data['miesiąc'],
+          bins=range(1, 14),
+          xticks=range(1, 13),
+          xtick_labels=[polish_months[i] for i in range(1, 13)],
+          xlabel="Miesiąc",
+          title="Histogram miesięcy"
+      )
+
+  elif odp == "lata":
+    if not 'rok' in data.columns:
+      data = years(data, [])
+
+    min_year = data["rok"].min()
+    max_year = data["rok"].max()
+    year_ticks = list(range(min_year, max_year + 1))
+
+    plot_histogram(
+        data=data['rok'],
+        bins=range(min_year, max_year + 2),
+        xticks=year_ticks,
+        xtick_labels=year_ticks,
+        xlabel="Lata",
+        title="Histogram dla lat"
+    )
+
+  else:
+    print("Nieznana opcja.\n")
+
+def filter_by_date(df, start_date, end_date=None):
+  if end_date is not None:
+    filtered_df = df[(df['czas'].dt.date >= pd.Timestamp(start_date).date()) &
+                       (df['czas'].dt.date <= pd.Timestamp(end_date).date())]
+  else:
+    filtered_df = df[df['czas'].dt.date == pd.Timestamp(start_date).date()]
+  
+  return filtered_df
+
+def weekdays(data, days):
+  df = data.copy()
+  if len(days) == 0:
+    df['dzień'] = df['czas'].dt.weekday.map(polish_days)
+  else:
+    df = df[df['czas'].dt.weekday.isin(days)]
+    df['dzień'] = df['czas'].dt.weekday.map(polish_days)  
+  return df
+
+def months(data, months):
+  df = data.copy()
+  if len(months) == 0:
+    df['miesiąc'] = df['czas'].dt.month.map(polish_months)
+  else:
+    df = df[df['czas'].dt.month.isin(months)]
+    df['miesiąc'] = df['czas'].dt.month.map(polish_months)  
+  return df
+
+def years(data, years):
+  df = data.copy()
+  if len(years) == 0:
+    df['rok'] = df['czas'].dt.year  
+  else:
+    df = df[df['czas'].dt.year.isin(years)]
+    df['rok'] = df['czas'].dt.year  
+  return df
+
+def users(data, user_names):
+  df = data.copy()
+  return df[df['id_użytkownika'].isin(user_names)]
+
+def teams(data, team_names):
+  df = data.copy()
+  df = df[df['id_zespołu'].isin(team_names)]  
+  return df
+
+def show_on_map(df):
+  if df.empty:
+    print("Brak punktów do pokazania na mapie.")
+    return
+  
+  points = df.groupby(['szerokość_geo', 'długość_geo']).size().reset_index(name='counts')
+  points['sizes'] = np.sqrt(points['counts'] / points['counts'].max()) * 20
+  hot = cm.get_cmap('hot')
+  hot_truncated = hot(np.linspace(0, 0.8, 256))
+
+  colorscale = [
+    [i/(len(hot_truncated)-1), f'rgb({int(r*255)},{int(g*255)},{int(b*255)})']
+    for i, (r,g,b,_) in enumerate(hot_truncated)
+  ]
+  
+  fig = px.scatter_mapbox(
+    points,
+    lon="długość_geo",
+    lat="szerokość_geo",
+    color="counts",
+    size="sizes",
+    zoom=3,
+    color_continuous_scale=colorscale,
+    labels={"counts": "liczba<br>detekcji"}
+  )
+
+  fig.update_layout(
+      mapbox_style="carto-positron",
+      margin={"r":0,"t":0,"l":0,"b":0}
+  )
+
+  fig.show()
+
+def find_user(df, name):
+  if name in df['id_użytkownika'].unique():
+    print(f"Użytkownik '{name}' znajduje się w zbiorze danych.")
+  elif name in df['id_zespołu'].unique():
+    print(f"Zespół '{name}' znajduje się w zbiorze danych.")
+  else:
+    print(f"Nie znaleziono użytkownika ani zespołu o nazwie '{name}' w zbiorze danych.")
+
+def time_set(df):
+  data = df.copy()
+
+  data['numer_dnia'] = data['czas'].dt.weekday
+  data['dzień'] = data['numer_dnia'].map(polish_days)
+
+  data['numer_miesiąca'] = data['czas'].dt.month
+  data['miesiąc'] = data['numer_miesiąca'].map(polish_months)
+
+  print("Zakres czasu w danych:")
+  print("Od:", data['czas'].min().date())
+  print("Do:", data['czas'].max().date())
+  print()
+
+  dni = data[['numer_dnia', 'dzień']].drop_duplicates().sort_values('numer_dnia')
+  miesiace = data[['numer_miesiąca', 'miesiąc']].drop_duplicates().sort_values('numer_miesiąca')
+
+  print("Dni tygodnia występujące w danych:")
+  print(dni.to_string(index=False))
+  print()
+
+  print("Miesiące występujące w danych:")
+  print(miesiace.to_string(index=False))
+
+def list_unique(df):
+  users_list = df['id_użytkownika'].dropna().unique().tolist()
+  teams_list = df['id_zespołu'].dropna().unique().tolist()
+
+  print("Lista użytkowników:")
+  print(users_list)
+  print()
+
+  print("Lista zespołów:")
+  print(teams_list)
