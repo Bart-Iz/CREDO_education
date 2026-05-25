@@ -104,6 +104,7 @@ def plot_histogram(data, bins, xticks, xtick_labels, xlabel, title):
   plt.tight_layout()
   plt.show()
   plt.close()
+  return
 
 def create_histogram(df):
   reverse_days = {v: k for k, v in polish_days.items()}
@@ -125,6 +126,7 @@ def create_histogram(df):
         xlabel="Dzień tygodnia",
         title="Histogram dni tygodnia"
     )
+    return
 
   elif odp == "miesiące":
     if not 'miesiąc' in data.columns:
@@ -138,6 +140,7 @@ def create_histogram(df):
           xlabel="Miesiąc",
           title="Histogram miesięcy"
       )
+    return
 
   elif odp == "lata":
     if not 'rok' in data.columns:
@@ -155,9 +158,11 @@ def create_histogram(df):
         xlabel="Lata",
         title="Histogram dla lat"
     )
+    return
 
   else:
     print("Nieznana opcja.\n")
+  return
 
 def filter_by_date(df, start_date, end_date=None):
   if end_date is not None:
